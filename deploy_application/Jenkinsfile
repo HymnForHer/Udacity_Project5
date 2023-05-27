@@ -1,5 +1,10 @@
 pipeline {
 	agent any
+	environment {
+        AWS_ACCESS_KEY = credentials('AWS_ACCESS_KEY')
+		AWS_PRIVATE_KEY = credentials('AWS_PRIVATE_KEY')
+		DOCKER = credentials('DOCKER_LOGIN')
+   	}
 	stages {
 
 		stage('Lint HTML') {
@@ -10,62 +15,58 @@ pipeline {
 		
 		stage('Build Docker Image') {
 			steps {
-				withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD']]){
-					sh '''
-						docker build -t mehmetincefidan/capstone .
-					'''
-				}
+				sh '''
+					docker build -t hymn208/udacity-prj5 .
+				'''
 			}
 		}
 
 		stage('Push Image To Dockerhub') {
 			steps {
-				withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD']]){
-					sh '''
-						docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-						docker push mehmetincefidan/capstone
-					'''
-				}
+				sh '''
+					docker login -u $DOCKER_USR -p $DOCKER_PSW
+					docker push hymn208/udacity-prj5
+				'''
 			}
 		}
 
 		stage('Set current kubectl context') {
 			steps {
-				withAWS(region:'us-east-1', credentials:'ecr_credentials') {
-					sh '''
-						kubectl config use-context arn:aws:eks:us-east-1:142977788479:cluster/capstonecluster
-					'''
-				}
+				sh '''
+					export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY
+					export AWS_SECRET_ACCESS_KEY=$AWS_PRIVATE_KEY
+					kubectl config use-context arn:aws:eks:us-east-1:361588775511:cluster/EKS-Cluster
+				'''
 			}
 		}
 
 		stage('Deploy blue container') {
 			steps {
-				withAWS(region:'us-east-1', credentials:'ecr_credentials') {
-					sh '''
-						kubectl apply -f ./blue-controller.json
-					'''
-				}
+				sh '''
+					export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY
+					export AWS_SECRET_ACCESS_KEY=$AWS_PRIVATE_KEY
+					kubectl apply -f ./blue-controller.json
+				'''
 			}
 		}
 
 		stage('Deploy green container') {
 			steps {
-				withAWS(region:'us-east-1', credentials:'ecr_credentials') {
-					sh '''
-						kubectl apply -f ./green-controller.json
-					'''
-				}
+				sh '''
+					export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY
+					export AWS_SECRET_ACCESS_KEY=$AWS_PRIVATE_KEY
+					kubectl apply -f ./green-controller.json
+				'''
 			}
 		}
 
 		stage('Create the service in the cluster, redirect to blue') {
 			steps {
-				withAWS(region:'us-east-1', credentials:'ecr_credentials') {
-					sh '''
-						kubectl apply -f ./blue-service.json
-					'''
-				}
+				sh '''
+					export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY
+					export AWS_SECRET_ACCESS_KEY=$AWS_PRIVATE_KEY
+					kubectl apply -f ./blue-service.json
+				'''
 			}
 		}
 
@@ -77,11 +78,11 @@ pipeline {
 
 		stage('Create the service in the cluster, redirect to green') {
 			steps {
-				withAWS(region:'us-east-1', credentials:'ecr_credentials') {
-					sh '''
-						kubectl apply -f ./green-service.json
-					'''
-				}
+				sh '''
+					export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY
+					export AWS_SECRET_ACCESS_KEY=$AWS_PRIVATE_KEY
+					kubectl apply -f ./green-service.json
+				'''
 			}
 		}
 
