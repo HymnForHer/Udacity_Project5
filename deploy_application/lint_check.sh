@@ -1,6 +1,6 @@
 in=$1
 
-if [[ "$in" == "index.html" ]];
+if [ '$in' == 'index.html' ];
 then
     echo "Lint Passed!!!";
     exit 0
