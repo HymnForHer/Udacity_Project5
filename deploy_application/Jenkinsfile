@@ -11,7 +11,7 @@ pipeline {
 			steps {
 				sh '''
 					chmod 777 ./deploy_application/lint_check.sh
-					./deploy_application/lint_check.sh index.html
+					./deploy_application/lint_check.sh index.htm
 				'''
 			}
 		}
