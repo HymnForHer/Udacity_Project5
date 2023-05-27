@@ -10,6 +10,7 @@ pipeline {
 		stage('Lint HTML') {
 			steps {
 				sh '''
+					ls -al
 					chmod 777 ./deploy_application/lint_check.sh
 					./deploy_application/lint_check.sh inde.html
 				'''
