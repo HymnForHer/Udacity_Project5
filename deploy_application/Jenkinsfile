@@ -19,7 +19,7 @@ pipeline {
 		stage('Build Docker Image') {
 			steps {
 				sh '''
-					sudo docker build -t hymn208/udacity-prj5 .
+					sudo docker build -f ./deploy_application/Dockerfile -t hymn208/udacity-prj5 .
 				'''
 			}
 		}
