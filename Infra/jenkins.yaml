@@ -1,0 +1,101 @@
+Resources:
+  myVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.1.0.0/16
+      EnableDnsSupport: true
+  myIgw:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: name
+          Value: udacity-igw
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: 
+        Ref: myVPC
+      InternetGatewayId:
+        Ref: myIgw
+  mySecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: IaC-sg-net
+      GroupDescription: "Network sg"
+      VpcId: 
+        Ref: myVPC
+      SecurityGroupIngress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+  pubSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone:  us-east-1a
+      VpcId:
+        Ref: myVPC
+      CidrBlock: 10.1.4.0/24
+  pubSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-east-1c
+      VpcId: 
+        Ref: myVPC
+      CidrBlock: 10.1.5.0/24
+  myRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: myVPC
+  myRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: 
+        Ref: myRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: 
+        Ref: myIgw
+  pubSubnet1Associat:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: 
+        Ref: pubSubnet1
+      RouteTableId: 
+        Ref: myRouteTable
+  pubSubnet2Associat:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: 
+        Ref: pubSubnet2
+      RouteTableId: 
+        Ref: myRouteTable
+  myEC2Instance2:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: "udacity"
+      DisableApiTermination: false
+      ImageId: "ami-0261755bbcb8c4a84"
+      BlockDeviceMappings: 
+      - DeviceName: "/dev/xvda"
+        Ebs: 
+          DeleteOnTermination: "false"
+          VolumeSize: "20"
+      InstanceType: "t2.medium"
+      # SecurityGroupIds:
+      #   - Ref: mySg
+      # SubnetId:
+      #    Ref: pubSubnet2
+      NetworkInterfaces: 
+      - AssociatePublicIpAddress: true
+        DeviceIndex: "0"
+        GroupSet: 
+          - !Ref mySecGroup
+        SubnetId: 
+          Ref: pubSubnet1
+      Tags:
+        - Key: name
+          Value: project5_jenkins
+  
+  
