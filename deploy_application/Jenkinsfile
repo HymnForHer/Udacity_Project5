@@ -9,7 +9,10 @@ pipeline {
 
 		stage('Lint HTML') {
 			steps {
-				sh 'tidy -q -e *.html'
+				sh '''
+					chmod 777 ./deploy_application/lint_check.sh
+					./deploy_application/lint_check.sh inde.html
+				'''
 			}
 		}
 		
